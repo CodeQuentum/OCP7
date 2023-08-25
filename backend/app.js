@@ -28,6 +28,7 @@ app.use((req, res, next) => {
 app.get('/api/books', (req, res, next) => {
     const book = [
     {
+        _id: "defzaefaezf",
         userId :"Blio",
         title :"Harry Potter à l\'écoles des sorciers",
         author : "J.K Rolling",
@@ -38,6 +39,7 @@ app.get('/api/books', (req, res, next) => {
         averageRating : 4,
     },
     {
+        _id: "defzaefaezfefgz",
         userId :"Blio",
         title :"Harry Potter et la chambres des secrets",
         author : "J.K Rolling",
