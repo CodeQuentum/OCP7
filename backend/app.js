@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const app = express();
+const bookRoutes = require('./routes/Book');
+const userRoutes = require('./routes/user');
 
 mongoose.connect('mongodb+srv://quentin:15171517@cluster0.1xy4ice.mongodb.net/?retryWrites=true&w=majority',
   { useNewUrlParser: true,
@@ -9,7 +10,8 @@ mongoose.connect('mongodb+srv://quentin:15171517@cluster0.1xy4ice.mongodb.net/?r
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
-app.use(express.json());
+const app = express();
+
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,39 +19,9 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     next();
   });
+app.use(express.json());
 
-  app.post('/api/books', (req, res, next) => {
-    console.log(req.body);
-    res.status(201).json({
-      message: 'Objet créé !'
-    });
-  });
+app.use('/api/books', bookRoutes);
+app.use('/api/auth', userRoutes);
 
-app.get('/api/books', (req, res, next) => {
-    const book = [
-    {
-        _id: "defzaefaezf",
-        userId :"Blio",
-        title :"Harry Potter à l\'écoles des sorciers",
-        author : "J.K Rolling",
-        imgUrl : " ",
-        year : 1997,
-        genre : "roman jeunesse",
-        ratings : 5,
-        averageRating : 4,
-    },
-    {
-        _id: "defzaefaezfefgz",
-        userId :"Blio",
-        title :"Harry Potter et la chambres des secrets",
-        author : "J.K Rolling",
-        imgUrl : " ",
-        year : 1998,
-        genre : "roman jeunesse",
-        ratings : 5,
-        averageRating : 4,
-    },
-    ];
-    res.status(200).json(book);
-});
-module.exports = app;
+module.exports = app; 
