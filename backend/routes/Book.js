@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const multer = require('../middleware/multer-config');
 const bookCtrl = require('../controllers/Book');
 
-router.post('/', auth, bookCtrl.createBook);
+router.post('/', auth, multer, bookCtrl.createBook);
 router.put('/:id', auth, bookCtrl.modifyBook);
 router.delete('/:id', auth, bookCtrl.deleteBook);
 router.get('/:id', bookCtrl.getOneBook);

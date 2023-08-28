@@ -1,33 +1,38 @@
 const Book = require('../models/Book');
 
-exports.createBook = (req, res, next) => {
-    const book = new Book ({
-      ...req.body
+exports.createBook = (req, res) => {
+  const bookObject = JSON.parse(req.body.book);
+  delete bookObject._id;
+  delete bookObject._userId;
+  const book = new Book({
+    ...bookObject,
+    userId: req.auth._userId,
+    imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.name}`
   });
   book.save()
-  .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
-  .catch(error => res.status(400).json({ error }));
-  };
+  .then(() => {res.status(201).json({message:'Livre enregistré'})})
+  .catch(error => res.status(400).json({ error }))
+};
 
-exports.modifyBook = (req, res, next) =>{
+exports.modifyBook = (req, res) =>{
     Book.updateOne({_id: req.params.id}, {...req.body, _id: req.params.id })
     .then(()=> res.status(200).json({ message: 'Livre modifié !'}))
     .catch(error => res.status(404).json({ error }));
   };
 
-exports.deleteBook = (req, res, next) => {
+exports.deleteBook = (req, res) => {
     Book.deleteOne({_id: req.params.id})
     .then(()=> res.status(200).json({ message: 'Livre supprimé !'}))
     .catch(error => res.status(404).json({ error }));
   };
 
-exports.getOneBook = (req, res, next) =>{
+exports.getOneBook = (req, res) =>{
     Book.findOne({_id: req.params.id})
-    .then(book => res.satus(200).json(book))
+    .then(book => res.status(200).json(book))
     .catch(error => res.status(404).json({ error }));
   };
 
-exports.getAllBooks =  (req, res, next) => {
+exports.getAllBooks =  (req, res) => {
     Book.find()
     .then(books => res.status(200).json(books))
     .catch(error => res.status(400).json({ error }));
