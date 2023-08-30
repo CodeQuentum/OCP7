@@ -13,7 +13,7 @@ exports.createBook = (req, res) => {
       userId: req.auth.userId,
       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
-
+    
     book.save()
       .then(() => {
         res.status(201).json({ message: 'Livre enregistré' });
@@ -26,6 +26,38 @@ exports.createBook = (req, res) => {
   }
 };
 
+exports.rateBook = (req, res) => {
+  const { userId, rating } = req.body;
+
+  if (rating < 0 || rating > 5) {
+    return res.status(400).json({ error: 'La note doit être comprise entre 0 et 5' });
+  }
+
+  Book.findById(req.params.id)
+    .then(book => {
+      if (!book) {
+        return res.status(404).json({ error: 'Livre non trouvé' });
+      }
+      if (book.ratings.some(rating => rating.userId === userId)) {
+        return res.status(400).json({ error: 'L\'utilisateur a déjà noté ce livre' });
+      }
+
+      book.ratings.push({ userId, grade: rating });
+
+      const totalRatings = book.ratings.length;
+      const totalSum = book.ratings.reduce((sum, rating) => sum + rating.grade, 0);
+      const averageRating = totalSum / totalRatings;
+      book.averageRating = averageRating;
+
+      return book.save();
+    })
+    .then(updatedBook => {
+      res.status(200).json(updatedBook);
+    })
+    .catch(error => {
+      res.status(500).json({ error });
+    });
+};
 
 exports.modifyBook = (req, res) => {
   const bookObject = req.file ? {
