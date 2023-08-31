@@ -109,3 +109,19 @@ exports.getAllBooks =  (req, res) => {
     .then(books => res.status(200).json(books))
     .catch(error => res.status(400).json({ error }));
 };
+
+exports.getBestRatedBooks = (req, res) => {
+  console.log('Début de la recherche des livres les mieux notés');
+
+  Book.find()
+    .sort({ averageRating: -1 })
+    .limit(3)
+    .then(books => {
+      console.log('Livres trouvés :', books);
+      res.status(200).json(books);
+    })
+    .catch(error => {
+      console.error('Erreur lors de la recherche des livres :', error);
+      res.status(500).json({ error });
+    });
+};
