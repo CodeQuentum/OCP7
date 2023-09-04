@@ -5,13 +5,12 @@ function sharpMiddleware(req, res, next) {
     return next();
   }
 
-  // Redimensionne l'image téléchargée à la taille souhaitée (par exemple, 600x800) en remplaçant l'image originale
   sharp(req.file.path)
     .resize(400, 600)
     .jpeg({ quality: 80 })
     .toBuffer()
     .then((buffer) => {
-      // Remplace le contenu de l'image originale par le contenu redimensionné
+
       req.file.buffer = buffer;
       next();
     })
