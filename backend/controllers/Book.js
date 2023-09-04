@@ -1,5 +1,6 @@
 const Book = require('../models/Book');
 const fs = require ('fs');
+const path = require('path');
 
 exports.createBook = (req, res) => {
   try {
@@ -59,26 +60,42 @@ exports.rateBook = (req, res) => {
     });
 };
 
-exports.modifyBook = (req, res) => {
-  const bookObject = req.file ? {
-      ...JSON.parse(req.body.book),
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  } : { ...req.body };
+exports.modifyBook = async (req, res) => {
+  try {
+    const bookObject = req.file
+      ? {
+          ...JSON.parse(req.body.book),
+          imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+        }
+      : { ...req.body };
+    delete bookObject._userId;
 
-  delete bookObject._userId;
-  Book.findOne({_id: req.params.id})
-      .then((book) => {
-          if (book.userId != req.auth.userId) {
-              res.status(401).json({ message : 'Non autorisé'});
-          } else {
-              Book.updateOne({ _id: req.params.id}, { ...bookObject, _id: req.params.id})
-              .then(() => res.status(200).json({message : 'Livre modifié!'}))
-              .catch(error => res.status(401).json({ error }));
-          }
-      })
-      .catch((error) => {
-          res.status(400).json({ error });
+    const book = await Book.findOne({ _id: req.params.id });
+
+    if (!book) {
+      return res.status(404).json({ message: "Le livre n'existe pas." });
+    }
+    if (book.userId != req.auth.userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+    if (req.file && book.imageUrl) {
+      const relativeImagePath = new URL(book.imageUrl).pathname;
+      const imagePath = path.join(__dirname, '..', relativeImagePath);
+      
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error('Erreur lors de la suppression de l\'ancienne image :', err);
+        } else {
+          console.log('Ancienne image supprimée avec succès.');
+        }
       });
+    }
+
+    await Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
+    res.status(200).json({ message: 'Livre modifié!' });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
 };
 
 exports.deleteBook = (req, res) => {
@@ -111,17 +128,13 @@ exports.getAllBooks =  (req, res) => {
 };
 
 exports.getBestRatedBooks = (req, res) => {
-  console.log('Début de la recherche des livres les mieux notés');
-
   Book.find()
     .sort({ averageRating: -1 })
     .limit(3)
     .then(books => {
-      console.log('Livres trouvés :', books);
       res.status(200).json(books);
     })
     .catch(error => {
-      console.error('Erreur lors de la recherche des livres :', error);
       res.status(500).json({ error });
     });
 };
