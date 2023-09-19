@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const path = require('path');
 const bookRoutes = require('./routes/Book');
 const userRoutes = require('./routes/user');
+require('dotenv').config();
+const mongoURI = process.env.MONGODB_URI;
 
-mongoose.connect('mongodb+srv://quentin:15171517@cluster0.1xy4ice.mongodb.net/?retryWrites=true&w=majority',
-  { useNewUrlParser: true,
-    useUnifiedTopology: true })
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
